@@ -1,41 +1,25 @@
-# 💪 Stretch Reminder - Electron React App
+# 💪 Stretch Reminder - Electron React Version
 
 A modern, beautiful desktop application built with Electron and React to remind you to take breaks and do stretches throughout your workday. Features a sleek UI with glassmorphism design and comprehensive functionality.
 
-## 📁 Project Structure
-
-This repository contains multiple projects:
-
-```
-stretch-reminder/
-├── python/                    # Python version (Tkinter)
-│   ├── stretch_reminder.py
-│   ├── requirements.txt
-│   └── README.md
-├── electron-react/            # Electron React version (Current)
-│   ├── package.json
-│   ├── public/
-│   ├── src/
-│   └── README.md
-├── tauri/                     # Future Tauri version
-│   └── (coming soon)
-└── README.md                  # This file
-```
-
 ## 🚀 Quick Start
 
-### Electron React Version (Recommended)
+### Prerequisites
+- Node.js 16+ and npm
+- Git
+
+### Installation & Development
 ```bash
 cd electron-react
 npm install
 npm run electron-dev
 ```
 
-### Python Version
+### Production Build
 ```bash
-cd python
-pip install -r requirements.txt
-python stretch_reminder.py
+npm run dist-win  # Windows
+npm run dist-mac  # macOS
+npm run dist-linux  # Linux
 ```
 
 ## ✨ Features
@@ -56,11 +40,6 @@ python stretch_reminder.py
 - **Icons**: React Icons
 - **Storage**: Electron Store
 - **Build**: Electron Builder
-
-## 📋 Prerequisites
-
-- Node.js 16+ and npm
-- Git
 
 ## 🎯 Usage
 
@@ -142,7 +121,7 @@ npm run dist-linux     # Build Linux AppImage
 ### Windows
 ```bash
 npm run dist-win
-# Creates .exe installer in dist/ folder
+# Creates optimized build in dist/ folder
 ```
 
 ### macOS
@@ -178,4 +157,4 @@ This project is open source and available under the MIT License.
 
 ---
 
-**Stay healthy and productive! 💪**
+**Stay healthy and productive! 💪** 

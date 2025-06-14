@@ -1,0 +1,2 @@
+# tkinter is built into Python, no need to install via pip
+# This file is kept for consistency with other projects 

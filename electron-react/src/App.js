@@ -294,14 +294,18 @@ function App() {
   };
 
   const handleStartReminders = async () => {
-    const newSettings = { ...settings, isRunning: true };
-    await saveSettings(newSettings);
-    await ipcRenderer.invoke('start-reminder-timer', settings.intervalMinutes);
-    
-    // Calculate next reminder time
-    const now = new Date();
-    const nextTime = new Date(now.getTime() + settings.intervalMinutes * 60000);
-    setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    setSettings(prevState => {
+      const newSettings = { ...prevState, isRunning: true };
+      saveSettings(newSettings);
+      ipcRenderer.invoke('start-reminder-timer', prevState.intervalMinutes);
+      
+      // Calculate next reminder time
+      const now = new Date();
+      const nextTime = new Date(now.getTime() + prevState.intervalMinutes * 60000);
+      setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      
+      return newSettings;
+    });
   };
 
   const handleStopReminders = async () => {
@@ -317,7 +321,7 @@ function App() {
       'Take a break and do some stretches!'
     );
     
-    // Calculate next reminder time
+    // Calculate next reminder time using current settings
     const now = new Date();
     const nextTime = new Date(now.getTime() + settings.intervalMinutes * 60000);
     setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -331,10 +335,20 @@ function App() {
     ipcRenderer.send('close-window');
   };
 
-  const handleSettingChange = (key, value) => {
+  const handleSettingChange = async (key, value) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    saveSettings(newSettings);
+    await saveSettings(newSettings);
+    
+    // If reminders are running and interval changed, update the timer
+    if (key === 'intervalMinutes' && settings.isRunning) {
+      await ipcRenderer.invoke('update-interval', value);
+      
+      // Update next reminder time
+      const now = new Date();
+      const nextTime = new Date(now.getTime() + value * 60000);
+      setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }
   };
 
   return (

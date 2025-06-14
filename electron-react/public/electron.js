@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, Notification } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
@@ -13,8 +14,8 @@ let reminderInterval;
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
-    width: 450,
-    height: 600,
+    width: 600,
+    height: 800,
     minWidth: 400,
     minHeight: 500,
     webPreferences: {
