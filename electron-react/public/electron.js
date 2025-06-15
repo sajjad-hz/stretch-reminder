@@ -38,6 +38,11 @@ function createWindow() {
   
   mainWindow.loadURL(startUrl);
 
+  // Open developer tools in development mode
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
+
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -155,6 +160,15 @@ ipcMain.handle('stop-reminder-timer', () => {
   if (reminderInterval) {
     clearInterval(reminderInterval);
     reminderInterval = null;
+  }
+});
+
+ipcMain.handle('update-interval', (event, newIntervalMinutes) => {
+  if (reminderInterval) {
+    clearInterval(reminderInterval);
+    reminderInterval = setInterval(() => {
+      mainWindow.webContents.send('show-reminder');
+    }, newIntervalMinutes * 60 * 1000);
   }
 });
 

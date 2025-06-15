@@ -168,7 +168,7 @@ const Button = styled.button`
   justify-content: center;
   gap: 8px;
   
-  ${props => props.primary && `
+  ${props => props.$primary && `
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     
@@ -179,7 +179,7 @@ const Button = styled.button`
     }
   `}
   
-  ${props => props.secondary && `
+  ${props => props.$secondary && `
     background: linear-gradient(135deg, #f44336, #d32f2f);
     color: white;
     
@@ -258,6 +258,7 @@ function App() {
     isRunning: false
   });
   const [nextReminder, setNextReminder] = useState('');
+  const [timerStartTime, setTimerStartTime] = useState(null);
 
   useEffect(() => {
     // Load settings on app start
@@ -274,6 +275,28 @@ function App() {
       ipcRenderer.removeAllListeners('stop-reminders');
     };
   }, []);
+
+  // Update next reminder time every minute when reminders are running
+  useEffect(() => {
+    if (!settings.isRunning || !timerStartTime) return;
+
+    const updateNextReminder = () => {
+      const now = new Date();
+      const elapsedMs = now.getTime() - timerStartTime.getTime();
+      const elapsedIntervals = Math.floor(elapsedMs / (settings.intervalMinutes * 60000));
+      const nextIntervalNumber = elapsedIntervals + 1;
+      const nextTime = new Date(timerStartTime.getTime() + (nextIntervalNumber * settings.intervalMinutes * 60000));
+      setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    };
+
+    // Update immediately
+    updateNextReminder();
+
+    // Update every minute
+    const interval = setInterval(updateNextReminder, 60000);
+
+    return () => clearInterval(interval);
+  }, [settings.isRunning, settings.intervalMinutes, timerStartTime]);
 
   const loadSettings = async () => {
     try {
@@ -299,9 +322,12 @@ function App() {
       saveSettings(newSettings);
       ipcRenderer.invoke('start-reminder-timer', prevState.intervalMinutes);
       
-      // Calculate next reminder time
-      const now = new Date();
-      const nextTime = new Date(now.getTime() + prevState.intervalMinutes * 60000);
+      // Store the timer start time
+      const startTime = new Date();
+      setTimerStartTime(startTime);
+      
+      // Calculate next reminder time based on start time
+      const nextTime = new Date(startTime.getTime() + prevState.intervalMinutes * 60000);
       setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       
       return newSettings;
@@ -313,6 +339,7 @@ function App() {
     await saveSettings(newSettings);
     await ipcRenderer.invoke('stop-reminder-timer');
     setNextReminder('');
+    setTimerStartTime(null);
   };
 
   const handleShowReminder = async () => {
@@ -321,10 +348,7 @@ function App() {
       'Take a break and do some stretches!'
     );
     
-    // Calculate next reminder time using current settings
-    const now = new Date();
-    const nextTime = new Date(now.getTime() + settings.intervalMinutes * 60000);
-    setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    // The useEffect will automatically update the next reminder time
   };
 
   const handleMinimize = () => {
@@ -344,9 +368,12 @@ function App() {
     if (key === 'intervalMinutes' && settings.isRunning) {
       await ipcRenderer.invoke('update-interval', value);
       
-      // Update next reminder time
-      const now = new Date();
-      const nextTime = new Date(now.getTime() + value * 60000);
+      // Reset timer start time to current time when interval changes
+      const newStartTime = new Date();
+      setTimerStartTime(newStartTime);
+      
+      // Calculate next reminder time based on new start time
+      const nextTime = new Date(newStartTime.getTime() + value * 60000);
       setNextReminder(nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     }
   };
@@ -432,7 +459,7 @@ function App() {
           
           <ButtonGroup>
             <Button 
-              primary 
+              $primary 
               onClick={handleStartReminders}
               disabled={settings.isRunning}
             >
@@ -440,7 +467,7 @@ function App() {
               Start
             </Button>
             <Button 
-              secondary 
+              $secondary 
               onClick={handleStopReminders}
               disabled={!settings.isRunning}
             >
